@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import { Sparkles, Search, Upload, LogOut, History } from 'lucide-react';
+import { Sparkles, Search, Upload, LogOut, History, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import JobCard from '@/components/JobCard';
 import type { Job } from '@/types/types';
@@ -14,6 +14,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [jobs, setJobs] = useState<Job[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [isLoadingUserData, setIsLoadingUserData] = useState(false);
 
   // Load user's profile and jobs when logged in
   useEffect(() => {
@@ -23,6 +24,7 @@ export default function Home() {
   }, [session]);
 
   const loadUserData = async () => {
+    setIsLoadingUserData(true);
     try {
       const res = await fetch('/api/user/data');
       const data = await res.json();
@@ -33,10 +35,12 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Failed to load user data:', error);
+    } finally {
+      setIsLoadingUserData(false);
     }
   };
 
-  // Poll for active job updates
+  // Poll for active job updates, placed correctly at component level
   const hasActiveJobs = jobs.some(job => job.status !== 'COMPLETE' && job.status !== 'ERROR');
   useEffect(() => {
     if (!hasActiveJobs) return;
@@ -56,6 +60,18 @@ export default function Home() {
     }, 2000);
     return () => clearInterval(interval);
   }, [hasActiveJobs, jobs]);
+
+  // Loading Screen
+  if (status === 'loading' || isLoadingUserData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600 font-medium">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -175,8 +191,8 @@ export default function Home() {
           <div className="max-w-lg mx-auto mb-10">
             <label
               className={`flex flex-col items-center justify-center w-full p-6 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${profileId
-                  ? 'border-green-300 bg-green-50 hover:bg-green-100'
-                  : 'border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50'
+                ? 'border-green-300 bg-green-50 hover:bg-green-100'
+                : 'border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50'
                 }`}
             >
               <input
