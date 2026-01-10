@@ -29,7 +29,9 @@ export async function connectToDatabase() {
     return { client, db };
 }
 
-export async function getCollection<T = any>(collectionName: string) {
+import { Document } from 'mongodb';
+
+export async function getCollection<T extends Document = any>(collectionName: string) {
     const { db } = await connectToDatabase();
     return db.collection<T>(collectionName);
 }
