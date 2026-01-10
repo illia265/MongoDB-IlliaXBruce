@@ -1,20 +1,42 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Sparkles, Search, ChevronDown, ChevronUp, Upload } from 'lucide-react';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { Sparkles, Search, ChevronDown, ChevronUp, Upload, LogOut, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import JobCard from '@/components/JobCard';
 import type { Job } from '@/types/types';
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const [isContextOpen, setIsContextOpen] = useState(false);
-  const [userBio, setUserBio] = useState('');
-  const [researchInterests, setResearchInterests] = useState('');
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
 
+  // Load user's profile and jobs when logged in
+  useEffect(() => {
+    if (session?.user) {
+      loadUserData();
+    }
+  }, [session]);
+
+  const loadUserData = async () => {
+    try {
+      const res = await fetch('/api/user/data');
+      const data = await res.json();
+      if (data.success) {
+        if (data.profileId) setProfileId(data.profileId);
+        if (data.jobs) setJobs(data.jobs);
+      }
+    } catch (error) {
+      console.error('Failed to load user data:', error);
+    }
+  };
+
+  // Poll for active job updates
   const hasActiveJobs = jobs.some(job => job.status !== 'COMPLETE' && job.status !== 'ERROR');
   useEffect(() => {
     if (!hasActiveJobs) return;
@@ -41,8 +63,8 @@ export default function Home() {
       setCvFile(file);
       const formData = new FormData();
       formData.append('cv', file);
-      formData.append('bio', userBio || 'Researcher');
-      formData.append('researchInterests', researchInterests || 'General');
+      formData.append('bio', 'Researcher');
+      formData.append('researchInterests', 'General');
       try {
         const res = await fetch('/api/upload', { method: 'POST', body: formData });
         const data = await res.json();
@@ -57,6 +79,10 @@ export default function Home() {
   };
 
   const handleLaunch = async () => {
+    if (!session) {
+      signIn('google');
+      return;
+    }
     if (!profileId) {
       setIsContextOpen(true);
       return;
@@ -92,20 +118,58 @@ export default function Home() {
             </div>
             <h1 className="text-xl font-bold text-gray-900">OutreachAI</h1>
           </div>
-          <button
-            onClick={() => setIsContextOpen(!isContextOpen)}
-            className={`px-4 py-2 rounded-lg border text-sm font-medium flex items-center gap-2 ${profileId
-              ? 'bg-green-50 border-green-300 text-green-700'
-              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
-          >
-            {profileId ? '✓ CV Uploaded' : 'Upload CV'}
-            {isContextOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
+
+          <div className="flex items-center gap-3">
+            {session ? (
+              <>
+                {profileId && (
+                  <button
+                    onClick={() => setShowHistory(!showHistory)}
+                    className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <History className="w-4 h-4" />
+                    History
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsContextOpen(!isContextOpen)}
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium flex items-center gap-2 ${profileId
+                    ? 'bg-green-50 border-green-300 text-green-700'
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                >
+                  {profileId ? '✓ CV Uploaded' : 'Upload CV'}
+                  {isContextOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
+                  <img
+                    src={session.user?.image || ''}
+                    alt=""
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <span className="text-sm text-gray-700 hidden sm:block">{session.user?.name?.split(' ')[0]}</span>
+                  <button
+                    onClick={() => signOut()}
+                    className="p-2 text-gray-500 hover:text-gray-700"
+                    title="Sign out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <button
+                onClick={() => signIn('google')}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 flex items-center gap-2"
+              >
+                Sign in with Google
+              </button>
+            )}
+          </div>
         </div>
 
         <AnimatePresence>
-          {isContextOpen && (
+          {isContextOpen && session && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -130,7 +194,11 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold text-gray-900 mb-3">Find Your Research Match</h2>
-          <p className="text-gray-600">Deploy AI agents to find professors and draft personalized outreach emails.</p>
+          <p className="text-gray-600">
+            {session
+              ? 'Deploy AI agents to find professors and draft personalized outreach emails.'
+              : 'Sign in to start finding professors and generating outreach emails.'}
+          </p>
         </div>
 
         {/* Search Bar */}
@@ -149,7 +217,7 @@ export default function Home() {
               onClick={handleLaunch}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-medium transition-colors"
             >
-              Launch
+              {session ? 'Launch' : 'Sign In'}
             </button>
           </div>
         </div>
@@ -160,6 +228,17 @@ export default function Home() {
             {jobs.map((job) => (
               <JobCard key={job.id || job._id} job={job} />
             ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {session && jobs.length === 0 && (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No searches yet</h3>
+            <p className="text-gray-500">Enter a field above to start finding professors</p>
           </div>
         )}
       </main>

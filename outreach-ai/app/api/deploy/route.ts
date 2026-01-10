@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import { getCollection, Collections } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
+import { ObjectId, MongoClient } from 'mongodb';
 import type { Job, DeployResponse, UserProfile } from '@/types/types';
+
+const MONGODB_URI = process.env.MONGODB_URI!;
+const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || 'outreach_ai';
 
 export async function POST(request: NextRequest) {
     try {
+        const session = await getServerSession();
         const body = await request.json();
         const { profileId, targetField } = body;
 
@@ -17,7 +22,7 @@ export async function POST(request: NextRequest) {
 
         // Verify profile exists
         const profilesCollection = await getCollection<UserProfile>(Collections.PROFILES);
-        const profile = await profilesCollection.findOne({ _id: new ObjectId(profileId) });
+        const profile = await profilesCollection.findOne({ _id: new ObjectId(profileId) } as any);
 
         if (!profile) {
             return NextResponse.json(
@@ -26,10 +31,22 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Get user ID if authenticated
+        let userId: string | undefined;
+        if (session?.user?.email) {
+            const client = new MongoClient(MONGODB_URI);
+            await client.connect();
+            const db = client.db(MONGODB_DB_NAME);
+            const user = await db.collection('users').findOne({ email: session.user.email });
+            if (user) userId = user._id.toString();
+            await client.close();
+        }
+
         // Create new job
         const jobsCollection = await getCollection<Job>(Collections.JOBS);
 
-        const job: Omit<Job, '_id' | 'id'> = {
+        const job = {
+            userId, // Link to user if authenticated
             profileId,
             targetField: targetField.trim(),
             status: 'PENDING',
@@ -53,7 +70,6 @@ export async function POST(request: NextRequest) {
         const jobId = result.insertedId.toString();
 
         // Trigger agent workflow asynchronously
-        // In production, this would be a background job/queue
         triggerAgentWorkflow(jobId, profileId, targetField).catch(console.error);
 
         const response: DeployResponse = {

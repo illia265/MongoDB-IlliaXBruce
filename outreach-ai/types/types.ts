@@ -8,9 +8,22 @@ export type AgentStatus =
   | 'COMPLETE'
   | 'ERROR';
 
+// User Account (Google OAuth)
+export interface User {
+  _id?: string;
+  googleId: string;
+  email: string;
+  name: string;
+  image?: string;
+  profileId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // User Profile
 export interface UserProfile {
   _id?: string;
+  userId?: string; // Links to User account
   bio: string;
   researchInterests: string;
   cvText: string;
