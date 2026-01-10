@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
         // Update job status to CV analysis
         await jobsCollection.updateOne(
-            { _id: new ObjectId(jobId) },
+            { _id: new ObjectId(jobId) } as any,
             {
                 $set: {
                     status: 'AGENT_1_ANALYZING_CV',
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         );
 
         // Get user profile with CV
-        const profile = await profilesCollection.findOne({ _id: new ObjectId(profileId) });
+        const profile = await profilesCollection.findOne({ _id: new ObjectId(profileId) } as any);
         if (!profile) {
             throw new Error('Profile not found');
         }
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
         // Update job with CV insights
         await jobsCollection.updateOne(
-            { _id: new ObjectId(jobId) },
+            { _id: new ObjectId(jobId) } as any,
             {
                 $set: {
                     cvInsights,
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         if (jobId) {
             const jobsCollection = await getCollection<Job>(Collections.JOBS);
             await jobsCollection.updateOne(
-                { _id: new ObjectId(jobId) },
+                { _id: new ObjectId(jobId) } as any,
                 {
                     $set: {
                         status: 'ERROR',

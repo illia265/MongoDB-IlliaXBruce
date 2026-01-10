@@ -16,14 +16,14 @@ export async function POST(request: NextRequest) {
         const userProfilesCollection = await getCollection<UserProfile>(Collections.PROFILES);
 
         // Get job
-        const job = await jobsCollection.findOne({ _id: new ObjectId(jobId) });
+        const job = await jobsCollection.findOne({ _id: new ObjectId(jobId) } as any);
         if (!job) {
             throw new Error('Job not found');
         }
 
         // Update job status
         await jobsCollection.updateOne(
-            { _id: new ObjectId(jobId) },
+            { _id: new ObjectId(jobId) } as any,
             {
                 $set: {
                     status: 'AGENT_4_WRITING_EMAIL',
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         );
 
         // Get user profile for bio
-        const userProfile = await userProfilesCollection.findOne({ _id: new ObjectId(job.profileId) });
+        const userProfile = await userProfilesCollection.findOne({ _id: new ObjectId(job.profileId) } as any);
         const userBio = userProfile?.bio || '';
 
         // Simulate work
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
             if (!research) continue;
 
             await jobsCollection.updateOne(
-                { _id: new ObjectId(jobId) },
+                { _id: new ObjectId(jobId) } as any,
                 {
                     $push: {
                         logs: {
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
             const emailContent = await generateEmail(prospect, research, job.cvInsights as any, userBio);
 
             const draft: EmailDraft = {
-                jobId,
+                jobId: jobId!,
                 prospectName: prospect.name,
                 subject: emailContent.subject,
                 body: emailContent.body,
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
 
         // Complete job
         await jobsCollection.updateOne(
-            { _id: new ObjectId(jobId) },
+            { _id: new ObjectId(jobId) } as any,
             {
                 $set: {
                     status: 'COMPLETE',
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
         if (jobId) {
             const jobsCollection = await getCollection<Job>(Collections.JOBS);
             await jobsCollection.updateOne(
-                { _id: new ObjectId(jobId) },
+                { _id: new ObjectId(jobId) } as any,
                 {
                     $set: {
                         status: 'ERROR',

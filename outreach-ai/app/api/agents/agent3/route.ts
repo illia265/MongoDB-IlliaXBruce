@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
         // Update job status
         await jobsCollection.updateOne(
-            { _id: new ObjectId(jobId) },
+            { _id: new ObjectId(jobId) } as any,
             {
                 $set: {
                     status: 'AGENT_3_VERIFYING_PUBLICATIONS',
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
         // Update job with verified analyses
         await jobsCollection.updateOne(
-            { _id: new ObjectId(jobId) },
+            { _id: new ObjectId(jobId) } as any,
             {
                 $set: {
                     researchAnalyses,
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         if (jobId) {
             const jobsCollection = await getCollection<Job>(Collections.JOBS);
             await jobsCollection.updateOne(
-                { _id: new ObjectId(jobId) },
+                { _id: new ObjectId(jobId) } as any,
                 {
                     $set: {
                         status: 'ERROR',

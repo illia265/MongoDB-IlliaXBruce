@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
         // Update job status
         await jobsCollection.updateOne(
-            { _id: new ObjectId(jobId) },
+            { _id: new ObjectId(jobId) } as any,
             {
                 $set: {
                     status: 'AGENT_2_FINDING_PROSPECTS',
@@ -49,17 +49,17 @@ export async function POST(request: NextRequest) {
         const prospectInserts = await prospectsCollection.insertMany(prospects as any[]);
         const prospectIds = Object.values(prospectInserts.insertedIds).map((id) => id.toString());
 
-        const prospectsWithIds = prospects.map((p, idx) => ({
+        const prospectsWithIds = prospects.map((p: any, idx: number) => ({
             ...p,
             _id: prospectIds[idx],
         }));
 
         // Update job with prospects
         await jobsCollection.updateOne(
-            { _id: new ObjectId(jobId) },
+            { _id: new ObjectId(jobId) } as any,
             {
                 $set: {
-                    prospects: prospectsWithIds,
+                    prospects: prospectsWithIds as any,
                     updatedAt: new Date(),
                 },
                 $push: {
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
         if (jobId) {
             const jobsCollection = await getCollection<Job>(Collections.JOBS);
             await jobsCollection.updateOne(
-                { _id: new ObjectId(jobId) },
+                { _id: new ObjectId(jobId) } as any,
                 {
                     $set: {
                         status: 'ERROR',
