@@ -1,9 +1,9 @@
 // Agent Status Types
 export type AgentStatus =
   | 'PENDING'
-  | 'AGENT_1_FINDING_PROSPECTS'
-  | 'AGENT_2_ANALYZING_PUBLICATIONS'
-  | 'AGENT_3_ANALYZING_CV'
+  | 'AGENT_1_ANALYZING_CV'
+  | 'AGENT_2_FINDING_PROSPECTS'
+  | 'AGENT_3_VERIFYING_PUBLICATIONS'
   | 'AGENT_4_WRITING_EMAIL'
   | 'COMPLETE'
   | 'ERROR';
@@ -40,6 +40,9 @@ export interface ResearchAnalysis {
     year: number;
     summary: string;
     relevance: string;
+    url?: string;
+    verified?: boolean;
+    verifiedUrl?: string;
   }[];
   keyThemes: string[];
   talkingPoints: string[];

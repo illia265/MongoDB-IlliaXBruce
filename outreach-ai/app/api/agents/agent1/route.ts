@@ -1,90 +1,83 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCollection, Collections } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { findProspects } from '@/lib/aiService';
-import type { Job, Prospect } from '@/types/types';
+import { analyzeCV } from '@/lib/aiService';
+import type { Job, UserProfile } from '@/types/types';
 
+/**
+ * Agent 1: Analyze CV (runs first)
+ * Extracts skills, experience, and achievements from user's CV
+ */
 export async function POST(request: NextRequest) {
     let jobId: string | undefined;
 
     try {
         const body = await request.json();
         jobId = body.jobId;
-        const { targetField } = body;
+        const { profileId, targetField } = body;
 
         const jobsCollection = await getCollection<Job>(Collections.JOBS);
-        const prospectsCollection = await getCollection<Prospect>(Collections.PROSPECTS);
+        const profilesCollection = await getCollection<UserProfile>(Collections.PROFILES);
 
-        // Update job status
+        // Update job status to CV analysis
         await jobsCollection.updateOne(
             { _id: new ObjectId(jobId) },
             {
                 $set: {
-                    status: 'AGENT_1_FINDING_PROSPECTS',
+                    status: 'AGENT_1_ANALYZING_CV',
                     currentAgent: 1,
                     updatedAt: new Date(),
                 },
                 $push: {
                     logs: {
                         agent: 1,
-                        message: 'Agent 1 initialized. Searching for professors and researchers...',
+                        message: 'Agent 1 initialized. Analyzing CV...',
                         timestamp: new Date(),
                     } as any,
                 },
             }
         );
 
-        // Simulate work (in real app, this would be web scraping/API calls)
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        // Find prospects using AI
-        const prospects = await findProspects(targetField);
-
-        // Store prospects in database
-        if (!prospects || prospects.length === 0) {
-            throw new Error('No prospects found by AI. Please try a different target field or try again.');
+        // Get user profile with CV
+        const profile = await profilesCollection.findOne({ _id: new ObjectId(profileId) });
+        if (!profile) {
+            throw new Error('Profile not found');
         }
 
-        const prospectInserts = await prospectsCollection.insertMany(prospects as any[]);
-        const prospectIds = Object.values(prospectInserts.insertedIds).map((id) => id.toString());
+        // Analyze CV using AI
+        const cvInsights = await analyzeCV(profile.cvText, targetField);
+        cvInsights.profileId = profileId;
 
-        // Update prospects with their IDs
-        const prospectsWithIds = prospects.map((p, idx) => ({
-            ...p,
-            _id: prospectIds[idx],
-        }));
-
-        // Log findings
+        // Update job with CV insights
         await jobsCollection.updateOne(
             { _id: new ObjectId(jobId) },
             {
                 $set: {
-                    prospects: prospectsWithIds,
+                    cvInsights,
                     updatedAt: new Date(),
                 },
                 $push: {
                     logs: {
                         agent: 1,
-                        message: `Found ${prospects.length} potential prospects in ${targetField}`,
+                        message: `Extracted ${cvInsights.skills.length} skills and ${cvInsights.experience.length} experiences from CV`,
                         timestamp: new Date(),
                     } as any,
                 },
             }
         );
 
-        // Trigger Agent 2
+        // Trigger Agent 2 (Find Prospects)
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         fetch(`${baseUrl}/api/agents/agent2`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jobId, prospects: prospectsWithIds }),
+            body: JSON.stringify({ jobId, targetField }),
         }).catch(console.error);
 
-        return NextResponse.json({ success: true, prospects: prospectsWithIds });
+        return NextResponse.json({ success: true, cvInsights });
     } catch (error: any) {
         console.error('Agent 1 error:', error);
 
-        // Update job with error
         if (jobId) {
             const jobsCollection = await getCollection<Job>(Collections.JOBS);
             await jobsCollection.updateOne(

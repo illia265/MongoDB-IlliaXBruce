@@ -1,16 +1,19 @@
 import OpenAI from 'openai';
 import type { Prospect, ResearchAnalysis, CVInsight } from '@/types/types';
 
-// Agent Model Configuration
-// Agent Model Configuration
-// Agent Model Configuration
+// 2026 Fireworks Model Stack
 const AGENT_MODELS = {
-    // Verified Model IDs from your account (Jan 2026)
-    // Using Llama 3.3 70B for all agents as it is available and highly capable
-    AGENT_1: 'accounts/fireworks/models/llama-v3p3-70b-instruct',
-    AGENT_2: 'accounts/fireworks/models/llama-v3p3-70b-instruct',
-    AGENT_3: 'accounts/fireworks/models/llama-v3p3-70b-instruct',
-    AGENT_4: 'accounts/fireworks/models/llama-v3p3-70b-instruct',
+    // "Heavy Lifter" - Llama 3.3 70B for complex reasoning tasks
+    AGENT_1: 'accounts/fireworks/models/llama-v3p3-70b-instruct', // CV Analysis
+
+    // "Speedster" - Llama 3.2 3B for fast, low-reasoning tasks (finding names)
+    AGENT_2: 'accounts/fireworks/models/llama-v3p2-3b-instruct', // Prospect Scouting
+
+    // "Heavy Lifter" - 70B for JSON validation & verification logic
+    AGENT_3: 'accounts/fireworks/models/llama-v3p3-70b-instruct', // Publication Verification
+
+    // "Heavy Lifter" - 70B for high-quality email drafting
+    AGENT_4: 'accounts/fireworks/models/llama-v3p3-70b-instruct', // Email Writing
 };
 
 // Initialize OpenAI client compatible with Fireworks AI
@@ -120,7 +123,7 @@ export async function analyzePublications(
     }
 
     // Real AI implementation
-    const prompt = `Analyze recent publications for ${prospect.name}, a ${prospect.title} at ${prospect.institution} researching ${prospect.researchAreas.join(', ')}. Find 2-3 recent papers and extract: title, year, summary, relevance, key themes, and talking points for outreach. Return JSON.`;
+    const prompt = `Analyze recent publications for ${prospect.name}, a ${prospect.title} at ${prospect.institution} researching ${prospect.researchAreas.join(', ')}. Find 2-3 recent papers and extract: title, year, summary, relevance, url (Google Scholar or DOI link), key themes, and talking points for outreach. Return JSON with papers array containing: title, year, summary, relevance, url.`;
 
     const response = await openai!.chat.completions.create({
         model: AGENT_MODELS.AGENT_2,

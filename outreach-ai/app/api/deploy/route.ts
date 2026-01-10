@@ -77,11 +77,11 @@ async function triggerAgentWorkflow(jobId: string, profileId: string, targetFiel
     try {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-        // Agent 1: Find Prospects
+        // Agent 1: Analyze CV (runs first)
         await fetch(`${baseUrl}/api/agents/agent1`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jobId, targetField }),
+            body: JSON.stringify({ jobId, profileId, targetField }),
         });
 
         // Agents 2, 3, 4 will be triggered in sequence by each previous agent

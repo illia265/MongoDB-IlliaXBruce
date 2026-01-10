@@ -11,9 +11,9 @@ interface JobCardProps {
 
 const STATUS_MAP: Record<string, { text: string; color: string; bg: string }> = {
     'PENDING': { text: 'Starting...', color: 'text-gray-600', bg: 'bg-gray-100' },
-    'AGENT_1_FINDING_PROSPECTS': { text: 'Finding prospects', color: 'text-blue-600', bg: 'bg-blue-100' },
-    'AGENT_2_ANALYZING_PUBLICATIONS': { text: 'Analyzing publications', color: 'text-purple-600', bg: 'bg-purple-100' },
-    'AGENT_3_ANALYZING_CV': { text: 'Analyzing CV', color: 'text-orange-600', bg: 'bg-orange-100' },
+    'AGENT_1_ANALYZING_CV': { text: 'Analyzing CV', color: 'text-blue-600', bg: 'bg-blue-100' },
+    'AGENT_2_FINDING_PROSPECTS': { text: 'Finding prospects', color: 'text-purple-600', bg: 'bg-purple-100' },
+    'AGENT_3_VERIFYING_PUBLICATIONS': { text: 'Verifying publications', color: 'text-teal-600', bg: 'bg-teal-100' },
     'AGENT_4_WRITING_EMAIL': { text: 'Writing emails', color: 'text-pink-600', bg: 'bg-pink-100' },
     'COMPLETE': { text: 'Complete', color: 'text-green-600', bg: 'bg-green-100' },
     'ERROR': { text: 'Error', color: 'text-red-600', bg: 'bg-red-100' },
@@ -103,6 +103,35 @@ export default function JobCard({ job }: JobCardProps) {
                                                     </span>
                                                 ))}
                                             </div>
+                                            {analysis.publications && analysis.publications.length > 0 && (
+                                                <div className="mt-3 space-y-2 border-t border-gray-200 pt-2">
+                                                    <p className="text-xs font-medium text-gray-500 uppercase">Papers:</p>
+                                                    {analysis.publications.map((pub, pidx) => (
+                                                        <div key={pidx} className="text-sm flex items-start gap-2">
+                                                            <div className="flex-1">
+                                                                <p className="text-gray-800">
+                                                                    {pub.title} ({pub.year})
+                                                                    {pub.verified !== undefined && (
+                                                                        <span className={`ml-2 px-1.5 py-0.5 text-xs rounded ${pub.verified ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                                            {pub.verified ? '✓ Verified' : '? Unverified'}
+                                                                        </span>
+                                                                    )}
+                                                                </p>
+                                                                {(pub.verifiedUrl || pub.url) && (
+                                                                    <a
+                                                                        href={pub.verifiedUrl || pub.url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-blue-600 hover:underline text-xs"
+                                                                    >
+                                                                        View Paper →
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                     {(!job.researchAnalyses || job.researchAnalyses.length === 0) && (
