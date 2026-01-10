@@ -11,7 +11,7 @@ export async function GET(
         const { id } = await params;
 
         const jobsCollection = await getCollection<Job>(Collections.JOBS);
-        const job = await jobsCollection.findOne({ _id: new ObjectId(id) });
+        const job = await jobsCollection.findOne({ _id: new ObjectId(id) } as any);
 
         if (!job) {
             return NextResponse.json(
