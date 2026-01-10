@@ -112,26 +112,13 @@ export default function Home() {
               exit={{ height: 0, opacity: 0 }}
               className="border-t border-gray-200 bg-white"
             >
-              <div className="max-w-3xl mx-auto p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Your CV / Resume</label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer relative">
-                      <input type="file" onChange={handleCVUpload} className="absolute inset-0 opacity-0 cursor-pointer" accept=".pdf,.docx,.txt" />
-                      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">{cvFile ? cvFile.name : 'Click to upload'}</p>
-                      <p className="text-xs text-gray-400 mt-1">PDF, DOCX, TXT</p>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Research Interests</label>
-                    <textarea
-                      className="w-full h-32 border border-gray-300 rounded-lg p-3 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                      placeholder="Describe your research background..."
-                      value={researchInterests}
-                      onChange={(e) => setResearchInterests(e.target.value)}
-                    />
-                  </div>
+              <div className="max-w-md mx-auto p-6">
+                <label className="block text-sm font-medium text-gray-700 mb-3 text-center">Upload Your CV / Resume</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer relative">
+                  <input type="file" onChange={handleCVUpload} className="absolute inset-0 opacity-0 cursor-pointer" accept=".pdf,.docx,.txt" />
+                  <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                  <p className="text-sm text-gray-600 font-medium">{cvFile ? cvFile.name : 'Click to upload'}</p>
+                  <p className="text-xs text-gray-400 mt-1">PDF, DOCX, or TXT</p>
                 </div>
               </div>
             </motion.div>
