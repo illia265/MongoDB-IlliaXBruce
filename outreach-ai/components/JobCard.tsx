@@ -33,12 +33,12 @@ export default function JobCard({ job }: JobCardProps) {
     };
 
     return (
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="p-4">
                 <div className="flex items-start justify-between mb-3">
                     <div>
                         <h3 className="font-semibold text-gray-900">{job.targetField}</h3>
-                        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium mt-2 ${status.bg} ${status.color}`}>
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium mt-2 ${status.bg} ${status.color}`}>
                             {isActive && <Loader2 className="w-3 h-3 animate-spin" />}
                             {isComplete && <CheckCircle2 className="w-3 h-3" />}
                             {isError && <AlertCircle className="w-3 h-3" />}
