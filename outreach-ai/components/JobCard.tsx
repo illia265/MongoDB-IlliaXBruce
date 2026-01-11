@@ -37,7 +37,7 @@ export default function JobCard({ job }: JobCardProps) {
             <div className="p-4">
                 <div className="flex items-start justify-between mb-3">
                     <div>
-                        <h3 className="font-semibold text-gray-900">{job.targetField}</h3>
+                        <h3 className="font-semibold font-display text-gray-900">{job.targetField}</h3>
                         <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium mt-2 ${status.bg} ${status.color}`}>
                             {isActive && <Loader2 className="w-3 h-3 animate-spin" />}
                             {isComplete && <CheckCircle2 className="w-3 h-3" />}
@@ -96,7 +96,7 @@ export default function JobCard({ job }: JobCardProps) {
                                     {(job.researchAnalyses || []).map((analysis: ResearchAnalysis, i: number) => (
                                         <div key={i} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                                             <div className="flex items-center justify-between mb-3">
-                                                <h4 className="font-semibold text-gray-900">{analysis.prospectName}</h4>
+                                                <h4 className="font-semibold font-display text-gray-900">{analysis.prospectName}</h4>
                                             </div>
                                             <div className="flex flex-wrap gap-1.5 mb-3">
                                                 {analysis.keyThemes.slice(0, 4).map((theme: string, idx: number) => (
