@@ -59,8 +59,8 @@ export async function findProspects(
     }
 
     // Real AI implementation
-    const prompt = `Find 2-3 prominent professors or researchers in the field of "${researchField}"${targetInstitution ? ` at ${targetInstitution}` : ''
-        }. Return as JSON array with fields: name, title, institution, researchAreas.`;
+    const prompt = `Find 5-7 prominent and currently active professors or researchers who specialize specifically in "${researchField}"${targetInstitution ? ` at ${targetInstitution}` : ''
+        }. Ensure they have recent publications (post-2023). Return as JSON array with fields: name, title, institution, researchAreas.`;
 
     const response = await openai!.chat.completions.create({
         model: AGENT_MODELS.AGENT_1,

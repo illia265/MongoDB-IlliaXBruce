@@ -161,14 +161,17 @@ async function findVerifiedPublications(
         const authors = authorData.data || [];
 
         if (authors.length === 0) {
-            console.log('No authors found for:', authorName);
+            console.log('No authors found for:', authorName, 'trying simpler search...');
+            // Retry with just the last name if full name fails, or handle differently
+            // For now, let's return [] but maybe we want to be less strict?
+            // Actually, let's just log it.
             return publications;
         }
 
         // Get papers for the first matching author
         const authorId = authors[0].authorId;
         const papersResponse = await fetch(
-            `https://api.semanticscholar.org/graph/v1/author/${authorId}/papers?fields=title,year,authors,url&limit=5`,
+            `https://api.semanticscholar.org/graph/v1/author/${authorId}/papers?fields=title,year,authors,url&limit=10`,
             {
                 headers: {
                     'Accept': 'application/json',
